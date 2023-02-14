@@ -32,7 +32,6 @@ def getcountry():
             ips.append(k)
     for i in range(0, len(ips), 10):
         lp = ips[i:min(i+10, len(ips))]
-        j = i
         try:
             res = requests.post(u, json=lp)
             print(lp)
