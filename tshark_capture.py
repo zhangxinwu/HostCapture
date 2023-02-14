@@ -23,26 +23,33 @@ def gethost(ip):
 def getinfo(ip):
     if ip in ip_info:
         return ip_info[ip]
+
+def getcountry():
     u = "http://ip-api.com/batch"
-    lp = [k for k in ip_port.keys()]
-    try:
-        res = requests.post(u, json=lp)
-        if res.status_code == 200:
-            jr = res.json()
-            for j in jr:
-                ret = "unknown"
-                if j["status"] == "success":
-                    ret = j["country"]
-                if j["status"] == "fail":
-                    ret = j["message"]
-                if ret == "":
+    ips = []
+    for k in ip_port:
+        if k not in ip_info:
+            ips.append(k)
+    for i in range(0, len(ips), 10):
+        lp = ips[i:min(i+10, len(ips))]
+        j = i
+        try:
+            res = requests.post(u, json=lp)
+            print(lp)
+            print(res)
+            if res.status_code == 200:
+                jr = res.json()
+                for j in jr:
                     ret = "unknown"
-                ip_info[j["query"]] = ret
-        else:
-            return "network error"
-    except Exception:
-        return ""
-    return getinfo(ip)
+                    if j["status"] == "success":
+                        ret = j["country"]
+                    if j["status"] == "fail":
+                        ret = j["message"]
+                    if ret == "":
+                        ret = "unknown"
+                    ip_info[j["query"]] = ret
+        except Exception:
+            pass
 
 
 def gettime():
@@ -57,6 +64,9 @@ def output():
     print("--------out start--------")
     fnm = "{}.csv".format(gettime())
     print("out file: ", fnm)
+    for _ in range(3):
+        getcountry()
+    print("get country info success.")
     with open(fnm, "w") as f:
         f.write("ip,host,port,size,country\n")
         for ip in ip_port:
